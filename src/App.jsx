@@ -1,9 +1,22 @@
 import { useState, useEffect } from "react";
-import { Routes, Route, Link, useLocation } from "react-router-dom";
+import {
+  Routes,
+  Route,
+  Link,
+  useLocation,
+} from "react-router-dom";
+
+// ... tus imports
+
+
 
 import VistaLogin from "./views/VistaLogin";
 import VistaJefe from "./views/VistaJefe";
 import VistaEmpleado from "./views/VistaEmpleado";
+import VistaInventario from "./views/VistaInventario";
+import VistaVentas from "./views/VistaVentas";
+
+import "./styles.css";
 
 function App() {
   const location = useLocation();
@@ -58,6 +71,27 @@ function App() {
           element={
             usuario === "empleado" ? (
               <VistaEmpleado />
+            ) : (
+              <VistaLogin setUsuario={setUsuario} />
+            )
+          }
+        />
+        {/* NUEVAS RUTAS PARA INVENTARIO Y VENTAS */}
+        <Route
+          path="/inventario"
+          element={
+            usuario === "jefe" ? (
+              <VistaInventario />
+            ) : (
+              <VistaLogin setUsuario={setUsuario} />
+            )
+          }
+        />
+        <Route
+          path="/ventas"
+          element={
+            usuario === "jefe" ? (
+              <VistaVentas />
             ) : (
               <VistaLogin setUsuario={setUsuario} />
             )

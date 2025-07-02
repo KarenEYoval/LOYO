@@ -8,7 +8,7 @@ function VistaLogin({ setUsuario }) {
   const [password, setPassword] = useState("");
   const [rol, setRol] = useState("jefe"); // 'jefe' o 'empleado'
 
-  // Dentro del componente, antes de handleLogin
+  //Nombres y contraseñas
   const usuariosValidos = [
     { nombre: "Jefa", password: "Rosalba", rol: "jefe" },
     { nombre: "Empleado", password: "Moldes", rol: "empleado" },
