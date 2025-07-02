@@ -1,25 +1,36 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import '../styles.css'; 
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "../styles.css";
 
 function VistaLogin({ setUsuario }) {
   const navigate = useNavigate();
-  const [nombre, setNombre] = useState('');
-  const [password, setPassword] = useState('');
-  const [rol, setRol] = useState('jefe'); // 'jefe' o 'empleado'
+  const [nombre, setNombre] = useState("");
+  const [password, setPassword] = useState("");
+  const [rol, setRol] = useState("jefe"); // 'jefe' o 'empleado'
+
+  // Dentro del componente, antes de handleLogin
+  const usuariosValidos = [
+    { nombre: "Jefa", password: "Rosalba", rol: "jefe" },
+    { nombre: "Empleado", password: "Moldes", rol: "empleado" },
+  ];
 
   const handleLogin = () => {
-    if (nombre && password) {
-      localStorage.setItem('usuario', rol);
-      setUsuario(rol);
+    const usuarioEncontrado = usuariosValidos.find(
+      (user) =>
+        user.nombre === nombre && user.password === password && user.rol === rol
+    );
 
-      if (rol === 'jefe') {
-        navigate('/jefe');
+    if (usuarioEncontrado) {
+      localStorage.setItem("usuario", usuarioEncontrado.rol);
+      setUsuario(usuarioEncontrado.rol);
+
+      if (usuarioEncontrado.rol === "jefe") {
+        navigate("/jefe");
       } else {
-        navigate('/empleado');
+        navigate("/empleado");
       }
     } else {
-      alert('Por favor, ingrese usuario y contraseña');
+      alert("Usuario, contraseña o rol incorrecto");
     }
   };
 

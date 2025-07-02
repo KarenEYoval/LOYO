@@ -1,18 +1,14 @@
 import { useState, useEffect } from "react";
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Link,
-  useNavigate,
-} from "react-router-dom";
+import { Routes, Route, Link, useLocation } from "react-router-dom";
 
 import VistaLogin from "./views/VistaLogin";
 import VistaJefe from "./views/VistaJefe";
 import VistaEmpleado from "./views/VistaEmpleado";
 
 function App() {
-  const [usuario, setUsuario] = useState(null); // null, 'jefe' o 'empleado'
+  const location = useLocation();
+  const estaEnLogin = location.pathname === "/";
+  const [usuario, setUsuario] = useState(null);
 
   useEffect(() => {
     const usuarioGuardado = localStorage.getItem("usuario");
@@ -22,9 +18,8 @@ function App() {
   }, []);
 
   return (
-    <BrowserRouter>
-      {/* Menú solo si hay sesión iniciada */}
-      {usuario && (
+    <>
+      {usuario && !estaEnLogin && (
         <nav
           style={{
             padding: "1rem",
@@ -33,11 +28,7 @@ function App() {
             gap: "1rem",
           }}
         >
-          {usuario === "jefe" && (
-            <>
-              <Link to="/jefe">Panel Jefe</Link>
-            </>
-          )}
+          {usuario === "jefe" && <Link to="/jefe">Panel Jefe</Link>}
           {usuario === "empleado" && <Link to="/empleado">Panel Empleado</Link>}
           <button
             onClick={() => {
@@ -73,7 +64,7 @@ function App() {
           }
         />
       </Routes>
-    </BrowserRouter>
+    </>
   );
 }
 
