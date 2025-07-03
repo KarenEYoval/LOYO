@@ -21,7 +21,6 @@ function VistaLogin({ setUsuario }) {
       setUsuario(rol);
       localStorage.setItem("usuario", rol);
 
-      // Navegar según rol
       if (rol === "jefe") {
         navigate("/jefe");
       } else if (rol === "empleado") {
@@ -35,19 +34,32 @@ function VistaLogin({ setUsuario }) {
   return (
     <div
       style={{
-        backgroundColor: "#68b684",
         height: "100vh",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
+        flexDirection: "column",
+       
       }}
     >
+      <h1
+        style={{
+          fontSize: "2.5rem",
+          color: "0a0a0a",
+          marginBottom: "2rem",
+          fontWeight: "bold",
+          textShadow: "1px 1px 2px rgba(0,0,0,0.2)",
+        }}
+      >
+         TIENDA LOYO
+      </h1>
+
       <div
         style={{
           backgroundColor: "white",
           padding: "2rem",
           borderRadius: "10px",
-          minWidth: "320px",
+          minWidth: "500px",
           boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
           display: "flex",
           flexDirection: "column",

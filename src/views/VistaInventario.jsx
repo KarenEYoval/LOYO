@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { db } from "../firebase";
 import { useNavigate } from "react-router-dom";
 
-function VistaJefe() {
+function VistaInventario() {
   const [productos, setProductos] = useState([]);
+  const [busqueda, setBusqueda] = useState("");
   const navigate = useNavigate();
 
-  // Cargar productos
   useEffect(() => {
     const fetchProductos = async () => {
       const productosRef = collection(db, "productos");
@@ -19,6 +19,32 @@ function VistaJefe() {
     fetchProductos();
   }, []);
 
+  const handleEliminarProducto = async (id) => {
+    const confirmar = window.confirm("¿Seguro que quieres eliminar este producto?");
+    if (!confirmar) return;
+
+    try {
+      await deleteDoc(doc(db, "productos", id));
+      setProductos(productos.filter((producto) => producto.id !== id));
+    } catch (error) {
+      console.error("Error al eliminar:", error);
+      alert("Hubo un error al eliminar el producto.");
+    }
+  };
+
+  const handleEditarProducto = (id) => {
+    navigate(`/editar-producto/${id}`);
+  };
+
+  // Filtrar productos según búsqueda
+  const productosFiltrados = productos.filter((p) => {
+    const texto = busqueda.toLowerCase();
+    return (
+      p.nombre.toLowerCase().includes(texto) ||
+      (p.codigo && p.codigo.toLowerCase().includes(texto))
+    );
+  });
+
   return (
     <div
       style={{
@@ -29,7 +55,6 @@ function VistaJefe() {
         alignItems: "flex-start",
       }}
     >
-      {/* Recuadro blanco */}
       <div
         style={{
           backgroundColor: "white",
@@ -43,8 +68,6 @@ function VistaJefe() {
           gap: "2rem",
         }}
       >
-        {/* Botones */}
-        {/* Botones */}
         <div style={{ display: "flex", justifyContent: "space-between" }}>
           <button
             onClick={() => navigate("/jefe")}
@@ -86,7 +109,21 @@ function VistaJefe() {
           Inventario
         </h2>
 
-        {/* Tabla de productos */}
+        {/* Barra de búsqueda */}
+        <input
+          type="text"
+          placeholder="Buscar por código o nombre..."
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          style={{
+            padding: "0.5rem",
+            fontSize: "1rem",
+            borderRadius: "8px",
+            border: "1px solid #ccc",
+            marginBottom: "1rem",
+          }}
+        />
+
         <div style={{ overflowX: "auto", width: "100%" }}>
           <table
             style={{
@@ -103,24 +140,57 @@ function VistaJefe() {
                 <th>Código</th>
                 <th>Nombre</th>
                 <th>Cantidad</th>
-                <th>Precio</th>
-                <th>Hora de venta</th>
-                <th>Vendido a</th>
+                <th>Precio original</th>
+                <th>Costo final</th>
+                <th>Acción</th>
               </tr>
             </thead>
             <tbody>
-              {productos.map((p) => (
+              {productosFiltrados.map((p) => (
                 <tr key={p.id}>
                   <td>{p.codigo || "—"}</td>
                   <td>{p.nombre}</td>
                   <td>{p.cantidad}</td>
-                  <td>${p.precio}</td>
+                  <td>${p.precioOriginal || "—"}</td>
+                  <td>${p.costoFinal || "—"}</td>
                   <td>
-                    {p.horaVenta ? new Date(p.horaVenta).toLocaleString() : "—"}
+                    <button
+                      onClick={() => handleEditarProducto(p.id)}
+                      style={{
+                        backgroundColor: "#f0ad4e",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "5px",
+                        padding: "0.3rem 0.6rem",
+                        marginRight: "0.5rem",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => handleEliminarProducto(p.id)}
+                      style={{
+                        backgroundColor: "red",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "5px",
+                        padding: "0.3rem 0.6rem",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Eliminar
+                    </button>
                   </td>
-                  <td>{p.vendidoA || "—"}</td>
                 </tr>
               ))}
+              {productosFiltrados.length === 0 && (
+                <tr>
+                  <td colSpan="6" style={{ textAlign: "center", padding: "1rem" }}>
+                    No se encontraron productos
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -129,4 +199,4 @@ function VistaJefe() {
   );
 }
 
-export default VistaJefe;
+export default VistaInventario;

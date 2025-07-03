@@ -9,7 +9,7 @@ import VistaInventario from "./views/VistaInventario";
 import VistaVentas from "./views/VistaVentas";
 import VistaAgregarProducto from "./views/VistaAgregarProducto.jsx";
 import VistaRegistro from "./views/VistaRegistro.jsx";
-
+import VistaEditarProducto from "./views/VistaEditarProducto.jsx";
 
 import "./styles.css";
 
@@ -54,22 +54,56 @@ function App() {
         <Route path="/" element={<VistaLogin setUsuario={setUsuario} />} />
         <Route
           path="/jefe"
-          element={usuario === "jefe" ? <VistaJefe /> : <VistaLogin setUsuario={setUsuario} />}
-        />/*
-        
+          element={
+            usuario === "jefe" ? (
+              <VistaJefe />
+            ) : (
+              <VistaLogin setUsuario={setUsuario} />
+            )
+          }
+        />
+        /*
         <Route
           path="/inventario"
-          element={usuario === "jefe" ? <VistaInventario /> : <VistaLogin setUsuario={setUsuario} />}
+          element={
+            usuario === "jefe" ? (
+              <VistaInventario />
+            ) : (
+              <VistaLogin setUsuario={setUsuario} />
+            )
+          }
         />
         <Route
           path="/ventas"
-          element={usuario === "jefe" ? <VistaVentas /> : <VistaLogin setUsuario={setUsuario} />}
+          element={
+            usuario === "jefe" ? (
+              <VistaVentas />
+            ) : (
+              <VistaLogin setUsuario={setUsuario} />
+            )
+          }
         />
         <Route
           path="/agregar-producto"
-          element={usuario === "jefe" ? <VistaAgregarProducto /> : <VistaLogin setUsuario={setUsuario} />}
+          element={
+            usuario === "jefe" ? (
+              <VistaAgregarProducto />
+            ) : (
+              <VistaLogin setUsuario={setUsuario} />
+            )
+          }
         />
         <Route path="/registro" element={<VistaRegistro />} />
+        <Route
+          path="/editar-producto/:id"
+          element={
+            usuario === "jefe" ? (
+              <VistaEditarProducto />
+            ) : (
+              <VistaLogin setUsuario={setUsuario} />
+            )
+          }
+        />
       </Routes>
     </>
   );

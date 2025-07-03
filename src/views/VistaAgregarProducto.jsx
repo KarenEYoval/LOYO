@@ -8,7 +8,8 @@ function VistaAgregarProducto() {
     codigo: "",
     nombre: "",
     cantidad: "",
-    precio: "",
+    precioOriginal: "",
+    costoFinal: "",
   });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -21,7 +22,9 @@ function VistaAgregarProducto() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.codigo || !form.nombre || !form.cantidad || !form.precio) {
+    const { codigo, nombre, cantidad, precioOriginal, costoFinal } = form;
+
+    if (!codigo || !nombre || !cantidad || !precioOriginal || !costoFinal) {
       alert("Completa todos los campos");
       return;
     }
@@ -31,14 +34,15 @@ function VistaAgregarProducto() {
     try {
       const productosRef = collection(db, "productos");
       await addDoc(productosRef, {
-        codigo: form.codigo,
-        nombre: form.nombre.trim(),
-        cantidad: parseInt(form.cantidad, 10),
-        precio: parseFloat(form.precio),
+        codigo,
+        nombre: nombre.trim(),
+        cantidad: parseInt(cantidad, 10),
+        precioOriginal: parseFloat(precioOriginal),
+        costoFinal: parseFloat(costoFinal),
       });
 
       alert("Producto agregado con éxito");
-      navigate("/inventario"); // regresa a inventario después de agregar
+      navigate("/inventario");
     } catch (error) {
       console.error("Error al agregar producto:", error);
       alert("Error al agregar producto");
@@ -102,9 +106,20 @@ function VistaAgregarProducto() {
           />
           <input
             type="number"
-            name="precio"
-            placeholder="Precio"
-            value={form.precio}
+            name="precioOriginal"
+            placeholder="Precio original"
+            value={form.precioOriginal}
+            onChange={handleChange}
+            required
+            min={0}
+            step="0.01"
+            style={{ padding: "0.5rem" }}
+          />
+          <input
+            type="number"
+            name="costoFinal"
+            placeholder="Costo final"
+            value={form.costoFinal}
             onChange={handleChange}
             required
             min={0}
