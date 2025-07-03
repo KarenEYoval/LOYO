@@ -44,7 +44,8 @@ function VistaJefe() {
         }}
       >
         {/* Botones */}
-        <div style={{ display: "flex", gap: "1rem" }}>
+        {/* Botones */}
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
           <button
             onClick={() => navigate("/jefe")}
             style={{

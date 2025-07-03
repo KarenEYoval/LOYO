@@ -1,72 +1,98 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import "../styles.css";
 
 function VistaLogin({ setUsuario }) {
-  const navigate = useNavigate();
-  const [nombre, setNombre] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rol, setRol] = useState("jefe"); // 'jefe' o 'empleado'
+  const [rol, setRol] = useState("empleado");
 
-  //Nombres y contraseñas
-  const usuariosValidos = [
-    { nombre: "Jefa", password: "Rosalba", rol: "jefe" },
-    { nombre: "Empleado", password: "Moldes", rol: "empleado" },
-  ];
+  const auth = getAuth();
+  const navigate = useNavigate();
 
-  const handleLogin = () => {
-    const usuarioEncontrado = usuariosValidos.find(
-      (user) =>
-        user.nombre === nombre && user.password === password && user.rol === rol
-    );
+  const loginConEmail = async () => {
+    if (!email || !password) {
+      alert("Por favor ingresa correo y contraseña");
+      return;
+    }
 
-    if (usuarioEncontrado) {
-      localStorage.setItem("usuario", usuarioEncontrado.rol);
-      setUsuario(usuarioEncontrado.rol);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      setUsuario(rol);
+      localStorage.setItem("usuario", rol);
 
-      if (usuarioEncontrado.rol === "jefe") {
+      // Navegar según rol
+      if (rol === "jefe") {
         navigate("/jefe");
-      } else {
+      } else if (rol === "empleado") {
         navigate("/empleado");
       }
-    } else {
-      alert("Usuario, contraseña o rol incorrecto");
+    } catch (error) {
+      alert("Error al iniciar sesión: " + error.message);
     }
   };
 
   return (
-    <div className="login-container">
-      <h2>Iniciar sesión</h2>
-      <div className="input-container">
-        <label htmlFor="nombre">Usuario</label>
+    <div
+      style={{
+        backgroundColor: "#68b684",
+        height: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: "white",
+          padding: "2rem",
+          borderRadius: "10px",
+          minWidth: "320px",
+          boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "1rem",
+        }}
+      >
+        <h2 style={{ margin: 0, textAlign: "center" }}>Iniciar sesión</h2>
         <input
-          type="text"
-          id="nombre"
-          placeholder="Ingrese su usuario"
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
+          type="email"
+          placeholder="Correo electrónico"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          style={{ padding: "0.5rem", fontSize: "1rem" }}
         />
-      </div>
-      <div className="input-container">
-        <label htmlFor="password">Contraseña</label>
         <input
           type="password"
-          id="password"
-          placeholder="Ingrese su contraseña"
+          placeholder="Contraseña"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          style={{ padding: "0.5rem", fontSize: "1rem" }}
         />
-      </div>
-      <div className="select-container">
-        <label htmlFor="rol">Rol</label>
-        <select value={rol} onChange={(e) => setRol(e.target.value)}>
-          <option value="jefe">Jefe</option>
+        <select
+          value={rol}
+          onChange={(e) => setRol(e.target.value)}
+          style={{ padding: "0.5rem", fontSize: "1rem" }}
+        >
           <option value="empleado">Empleado</option>
+          <option value="jefe">Jefe</option>
         </select>
+        <button
+          onClick={loginConEmail}
+          style={{
+            padding: "0.7rem",
+            fontSize: "1.1rem",
+            backgroundColor: "#4a90e2",
+            color: "white",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontWeight: "bold",
+          }}
+        >
+          Entrar
+        </button>
       </div>
-      <button className="login-button" onClick={handleLogin}>
-        Iniciar sesión
-      </button>
     </div>
   );
 }

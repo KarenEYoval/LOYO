@@ -62,6 +62,23 @@ function VistaJefe() {
             Ventas
           </button>
         </div>
+
+        {/* Botón Regresar al Login */}
+        <button
+          onClick={() => navigate("/")}
+          style={{
+            marginTop: "1rem",
+            backgroundColor: "#f44336",
+            color: "white",
+            padding: "0.8rem 1.5rem",
+            border: "none",
+            borderRadius: "8px",
+            fontSize: "1rem",
+            cursor: "pointer",
+          }}
+        >
+          Regresar al Login
+        </button>
       </div>
     </div>
   );
