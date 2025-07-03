@@ -1,20 +1,11 @@
 import { useState, useEffect } from "react";
-import {
-  Routes,
-  Route,
-  Link,
-  useLocation,
-} from "react-router-dom";
-
-// ... tus imports
-
-
+import { Routes, Route, Link, useLocation } from "react-router-dom";
 
 import VistaLogin from "./views/VistaLogin";
 import VistaJefe from "./views/VistaJefe";
-import VistaEmpleado from "./views/VistaEmpleado";
 import VistaInventario from "./views/VistaInventario";
 import VistaVentas from "./views/VistaVentas";
+import VistaAgregarProducto from "./views/VistaAgregarProducto.JSX";
 
 import "./styles.css";
 
@@ -92,6 +83,16 @@ function App() {
           element={
             usuario === "jefe" ? (
               <VistaVentas />
+            ) : (
+              <VistaLogin setUsuario={setUsuario} />
+            )
+          }
+        />
+        <Route
+          path="/agregar-producto"
+          element={
+            usuario === "jefe" ? (
+              <VistaAgregarProducto />
             ) : (
               <VistaLogin setUsuario={setUsuario} />
             )
