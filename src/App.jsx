@@ -12,7 +12,6 @@ import VistaRegistro from "./views/VistaRegistro.jsx";
 import VistaEditarProducto from "./views/VistaEditarProducto.jsx";
 import VistaHistorialVentas from "./views/VistaHistorialVentas";
 
-
 import "./styles.css";
 
 function App() {
@@ -37,6 +36,7 @@ function App() {
 
   return (
     <>
+      {/*}
       {usuario && !estaEnLogin && !estaEnVentas && (
         <nav
           style={{
@@ -50,7 +50,7 @@ function App() {
           {usuario === "empleado" && <Link to="/empleado">Panel Empleado</Link>}
           <button onClick={handleLogout}>Cerrar sesión</button>
         </nav>
-      )}
+      )}*/}
 
       <Routes>
         <Route path="/" element={<VistaLogin setUsuario={setUsuario} />} />
