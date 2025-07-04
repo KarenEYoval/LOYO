@@ -34,34 +34,80 @@ function VistaVentas() {
     }));
   };
 
-  const registrarVenta = async (producto) => {
-    const cantidad = parseInt(cantidades[producto.id], 10);
+  const registrarVentasGenerales = async () => {
+    const productosAVender = productos.filter((producto) => {
+      const cantidad = parseInt(cantidades[producto.id], 10);
+      return cantidad && cantidad > 0;
+    });
 
-    if (!cantidad || cantidad <= 0) {
-      alert("Ingresa una cantidad válida");
+    if (productosAVender.length === 0) {
+      alert("No hay productos con cantidades válidas.");
       return;
     }
 
-    const precioUnitario = producto.precioOriginal || producto.precio || 0;
-    const total = precioUnitario * cantidad;
-
     try {
-      await addDoc(collection(db, "ventas"), {
-        productoId: producto.id,
-        nombre: producto.nombre,
-        cantidadVendida: cantidad,
-        precioUnitario: precioUnitario,
-        totalVenta: total,
-        fecha: serverTimestamp(),
+      const ventasBatch = productosAVender.map(async (producto) => {
+        const cantidad = parseInt(cantidades[producto.id], 10);
+        const precioUnitario = producto.precioOriginal || producto.precio || 0;
+        const total = precioUnitario * cantidad;
+
+        return addDoc(collection(db, "ventas"), {
+          productoId: producto.id,
+          nombre: producto.nombre,
+          cantidadVendida: cantidad,
+          precioUnitario: precioUnitario,
+          totalVenta: total,
+          fecha: serverTimestamp(),
+        });
       });
-      alert("Venta registrada con éxito");
-      setCantidades((prev) => ({ ...prev, [producto.id]: "" })); // limpiar input
+
+      await Promise.all(ventasBatch);
+      alert("Ventas registradas con éxito");
+
+      // Limpiar cantidades
+      setCantidades({});
     } catch (error) {
-      console.error("Error al registrar venta:", error);
-      alert("Error al registrar la venta");
+      console.error("Error al registrar ventas:", error);
+      alert("Error al registrar las ventas");
     }
   };
 
+const limpiarCarrito = () => {
+  setCantidades({});
+};
+
+  // Calcular total general en tiempo real
+  const totalGeneral = productos.reduce((acc, producto) => {
+    const cantidad = parseInt(cantidades[producto.id], 10);
+    if (!cantidad || cantidad <= 0) return acc;
+
+    const precioUnitario = producto.precioOriginal || producto.precio || 0;
+    return acc + cantidad * precioUnitario;
+  }, 0);
+
+
+  
+  const carrito = productos
+    .filter((producto) => {
+      const cantidad = parseInt(cantidades[producto.id], 10);
+      return cantidad && cantidad > 0;
+    })
+    .map((producto) => {
+      const cantidad = parseInt(cantidades[producto.id], 10);
+      const precioUnitario = producto.precioOriginal || producto.precio || 0;
+      const total = cantidad * precioUnitario;
+
+      return {
+        id: producto.id,
+        nombre: producto.nombre,
+        cantidad,
+        precioUnitario,
+        total,
+      };
+    });
+
+    
+    
   return (
     <div
       style={{
@@ -143,23 +189,96 @@ function VistaVentas() {
                   placeholder="Cantidad"
                   style={{ width: "80px", padding: "0.3rem" }}
                 />
-                <button
-                  onClick={() => registrarVenta(producto)}
-                  style={{
-                    backgroundColor: "#4a90e2",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "8px",
-                    padding: "0.5rem 1rem",
-                    cursor: "pointer",
-                  }}
-                >
-                  Vender
-                </button>
               </div>
             </li>
           ))}
         </ul>
+
+        {/* CARRITO DE COMPRAS */}
+        {carrito.length > 0 && (
+          <div
+            style={{
+              backgroundColor: "#f8f8f8",
+              padding: "1.5rem",
+              borderRadius: "10px",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+            }}
+          >
+            <h2 style={{ marginBottom: "1rem", color: "#4a90e2" }}>
+              Resumen de Venta
+            </h2>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr
+                  style={{ textAlign: "left", borderBottom: "2px solid #ccc" }}
+                >
+                  <th style={{ padding: "0.5rem" }}>Producto</th>
+                  <th style={{ padding: "0.5rem" }}>Cantidad</th>
+                  <th style={{ padding: "0.5rem" }}>Precio</th>
+                  <th style={{ padding: "0.5rem" }}>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {carrito.map((item) => (
+                  <tr key={item.id} style={{ borderBottom: "1px solid #eee" }}>
+                    <td style={{ padding: "0.5rem" }}>{item.nombre}</td>
+                    <td style={{ padding: "0.5rem" }}>{item.cantidad}</td>
+                    <td style={{ padding: "0.5rem" }}>
+                      ${item.precioUnitario.toFixed(2)}
+                    </td>
+                    <td style={{ padding: "0.5rem" }}>
+                      ${item.total.toFixed(2)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* TOTAL GENERAL */}
+        <div style={{ textAlign: "center", marginTop: "1rem" }}>
+          <h2 style={{ fontSize: "1.5rem", color: "#4a90e2" }}>
+            TOTAL: ${totalGeneral.toFixed(2)}
+          </h2>
+        </div>
+
+        <div style={{ textAlign: "center", marginTop: "1rem" }}>
+          <button
+            onClick={registrarVentasGenerales}
+            style={{
+              padding: "0.8rem 1.5rem",
+              backgroundColor: "#4a90e2",
+              color: "white",
+              border: "none",
+              borderRadius: "10px",
+              cursor: "pointer",
+              fontWeight: "bold",
+            }}
+          >
+            Vender
+          </button>
+        </div>
+
+<div style={{ textAlign: "center", marginTop: "0.5rem" }}>
+  <button
+    onClick={limpiarCarrito}
+    style={{
+      padding: "0.5rem 1rem",
+      backgroundColor: "#e74c3c",
+      color: "white",
+      border: "none",
+      borderRadius: "10px",
+      cursor: "pointer",
+      fontWeight: "bold",
+    }}
+  >
+    Limpiar Carrito
+  </button>
+</div>
+
+
+
         {/* BOTÓN DE HISTORIAL DE VENTAS */}
         <div style={{ textAlign: "center", marginTop: "1rem" }}>
           <button

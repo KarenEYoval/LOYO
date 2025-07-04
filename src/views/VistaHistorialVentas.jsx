@@ -3,17 +3,9 @@ import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "../firebase";
 import { useNavigate } from "react-router-dom";
 
-// Función para obtener el inicio de la semana (lunes)
-function getStartOfWeek(date) {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Ajusta para lunes
-  return new Date(d.setDate(diff));
-}
-
-// Formatea fecha a string tipo "Semana del dd/mm/yyyy"
-function formatWeekLabel(date) {
-  return `Semana del ${date.toLocaleDateString()}`;
+// Función para formatear la fecha a "dd/mm/yyyy"
+function formatDateLabel(date) {
+  return date.toLocaleDateString(); // Formato: día/mes/año
 }
 
 function VistaHistorialVentas() {
@@ -35,23 +27,22 @@ function VistaHistorialVentas() {
     fetchVentas();
   }, []);
 
-  // Agrupa ventas por semana
-  const ventasPorSemana = ventas.reduce((acc, venta) => {
-    // Convierte la fecha Firestore a Date normal (o null si no hay)
+  // Agrupa ventas por día
+  const ventasPorDia = ventas.reduce((acc, venta) => {
     const fechaVenta = venta.fecha ? venta.fecha.toDate() : null;
     if (!fechaVenta) return acc;
 
-    const inicioSemana = getStartOfWeek(fechaVenta).toDateString();
+    const dia = formatDateLabel(fechaVenta);
 
-    if (!acc[inicioSemana]) acc[inicioSemana] = [];
-    acc[inicioSemana].push(venta);
+    if (!acc[dia]) acc[dia] = [];
+    acc[dia].push(venta);
 
     return acc;
   }, {});
 
-  // Ordenar semanas descendentemente (de más reciente a más antiguo)
-  const semanasOrdenadas = Object.keys(ventasPorSemana).sort(
-    (a, b) => new Date(b) - new Date(a)
+  // Ordenar días descendentemente
+  const diasOrdenados = Object.keys(ventasPorDia).sort(
+    (a, b) => new Date(b.split("/").reverse()) - new Date(a.split("/").reverse())
   );
 
   return (
@@ -106,20 +97,24 @@ function VistaHistorialVentas() {
             marginRight: "auto",
             transition: "background-color 0.3s",
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#52915c")}
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#68b684")}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.backgroundColor = "#52915c")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.backgroundColor = "#68b684")
+          }
         >
           Regresar
         </button>
 
-        {semanasOrdenadas.length === 0 && (
+        {diasOrdenados.length === 0 && (
           <p style={{ textAlign: "center", color: "#777", fontSize: "1.1rem" }}>
             No hay ventas registradas.
           </p>
         )}
 
-        {semanasOrdenadas.map((semana) => (
-          <section key={semana} style={{ marginBottom: "3rem" }}>
+        {diasOrdenados.map((dia) => (
+          <section key={dia} style={{ marginBottom: "3rem" }}>
             <h2
               style={{
                 borderBottom: "2px solid #68b684",
@@ -130,7 +125,7 @@ function VistaHistorialVentas() {
                 fontSize: "1.4rem",
               }}
             >
-              {formatWeekLabel(new Date(semana))}
+              {`Ventas del ${dia}`}
             </h2>
 
             <div style={{ overflowX: "auto" }}>
@@ -143,25 +138,32 @@ function VistaHistorialVentas() {
                 }}
               >
                 <thead>
-                  <tr style={{ color: "#555", fontWeight: "600", fontSize: "1rem" }}>
-                    <th
-                      style={{
-                        padding: "0.75rem 1rem",
-                        textAlign: "left",
-                      }}
-                    >
+                  <tr
+                    style={{
+                      color: "#555",
+                      fontWeight: "600",
+                      fontSize: "1rem",
+                    }}
+                  >
+                    <th style={{ padding: "0.75rem 1rem", textAlign: "left" }}>
                       Producto
                     </th>
-                    <th style={{ padding: "0.75rem 1rem", textAlign: "center" }}>Cantidad</th>
+                    <th style={{ padding: "0.75rem 1rem", textAlign: "center" }}>
+                      Cantidad
+                    </th>
                     <th style={{ padding: "0.75rem 1rem", textAlign: "center" }}>
                       Precio Unitario
                     </th>
-                    <th style={{ padding: "0.75rem 1rem", textAlign: "center" }}>Total</th>
-                    <th style={{ padding: "0.75rem 1rem", textAlign: "center" }}>Fecha</th>
+                    <th style={{ padding: "0.75rem 1rem", textAlign: "center" }}>
+                      Total
+                    </th>
+                    <th style={{ padding: "0.75rem 1rem", textAlign: "center" }}>
+                      Hora
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {ventasPorSemana[semana].map((venta) => (
+                  {ventasPorDia[dia].map((venta) => (
                     <tr
                       key={venta.id}
                       style={{
@@ -177,13 +179,22 @@ function VistaHistorialVentas() {
                         {venta.cantidadVendida}
                       </td>
                       <td style={{ padding: "1rem", textAlign: "center" }}>
-                        ${venta.precioUnitario.toFixed(2)}
+                        ${Number(venta.precioUnitario || 0).toFixed(2)}
                       </td>
                       <td style={{ padding: "1rem", textAlign: "center" }}>
-                        ${venta.totalVenta.toFixed(2)}
+                        ${Number(venta.totalVenta || 0).toFixed(2)}
                       </td>
-                      <td style={{ padding: "1rem", textAlign: "center", borderRadius: "0 10px 10px 0" }}>
-                        {venta.fecha?.toDate().toLocaleString() || "—"}
+                      <td
+                        style={{
+                          padding: "1rem",
+                          textAlign: "center",
+                          borderRadius: "0 10px 10px 0",
+                        }}
+                      >
+                        {venta.fecha?.toDate().toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }) || "—"}
                       </td>
                     </tr>
                   ))}

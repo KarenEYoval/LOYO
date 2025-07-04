@@ -78,7 +78,17 @@ function App() {
         <Route
           path="/ventas"
           element={
-            usuario === "jefe" ? (
+            usuario === "jefe" || usuario === "empleado" ? (
+              <VistaVentas />
+            ) : (
+              <VistaLogin setUsuario={setUsuario} />
+            )
+          }
+        />
+        <Route
+          path="/empleado"
+          element={
+            usuario === "jefe" || usuario === "empleado" ? (
               <VistaVentas />
             ) : (
               <VistaLogin setUsuario={setUsuario} />
