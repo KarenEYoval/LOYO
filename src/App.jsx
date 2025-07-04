@@ -10,6 +10,8 @@ import VistaVentas from "./views/VistaVentas";
 import VistaAgregarProducto from "./views/VistaAgregarProducto.jsx";
 import VistaRegistro from "./views/VistaRegistro.jsx";
 import VistaEditarProducto from "./views/VistaEditarProducto.jsx";
+import VistaHistorialVentas from "./views/VistaHistorialVentas";
+
 
 import "./styles.css";
 
@@ -104,6 +106,7 @@ function App() {
             )
           }
         />
+        <Route path="/historial-ventas" element={<VistaHistorialVentas />} />
       </Routes>
     </>
   );
