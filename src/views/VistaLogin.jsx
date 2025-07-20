@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 function VistaLogin({ setUsuario }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rol, setRol] = useState("empleado");
+  const [rol, setRol] = useState("jefe");
 
   const auth = getAuth();
   const navigate = useNavigate();

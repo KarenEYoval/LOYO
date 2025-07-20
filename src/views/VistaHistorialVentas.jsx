@@ -42,7 +42,8 @@ function VistaHistorialVentas() {
 
   // Ordenar días descendentemente
   const diasOrdenados = Object.keys(ventasPorDia).sort(
-    (a, b) => new Date(b.split("/").reverse()) - new Date(a.split("/").reverse())
+    (a, b) =>
+      new Date(b.split("/").reverse()) - new Date(a.split("/").reverse())
   );
 
   return (
@@ -127,6 +128,28 @@ function VistaHistorialVentas() {
             >
               {`Ventas del ${dia}`}
             </h2>
+            {/* Resumen por día */}
+            <p
+              style={{ fontSize: "1rem", color: "#444", marginBottom: "1rem" }}
+            >
+              Total productos vendidos:{" "}
+              <strong>
+                {ventasPorDia[dia].reduce(
+                  (acc, v) => acc + Number(v.cantidadVendida || 0),
+                  0
+                )}
+              </strong>
+              {" | "}
+              Transacciones: <strong>{ventasPorDia[dia].length}</strong>
+              {" | "}
+              Monto total:{" "}
+              <strong>
+                $
+                {ventasPorDia[dia]
+                  .reduce((acc, v) => acc + Number(v.totalVenta || 0), 0)
+                  .toFixed(2)}
+              </strong>
+            </p>
 
             <div style={{ overflowX: "auto" }}>
               <table
@@ -148,16 +171,24 @@ function VistaHistorialVentas() {
                     <th style={{ padding: "0.75rem 1rem", textAlign: "left" }}>
                       Producto
                     </th>
-                    <th style={{ padding: "0.75rem 1rem", textAlign: "center" }}>
+                    <th
+                      style={{ padding: "0.75rem 1rem", textAlign: "center" }}
+                    >
                       Cantidad
                     </th>
-                    <th style={{ padding: "0.75rem 1rem", textAlign: "center" }}>
+                    <th
+                      style={{ padding: "0.75rem 1rem", textAlign: "center" }}
+                    >
                       Precio Unitario
                     </th>
-                    <th style={{ padding: "0.75rem 1rem", textAlign: "center" }}>
+                    <th
+                      style={{ padding: "0.75rem 1rem", textAlign: "center" }}
+                    >
                       Total
                     </th>
-                    <th style={{ padding: "0.75rem 1rem", textAlign: "center" }}>
+                    <th
+                      style={{ padding: "0.75rem 1rem", textAlign: "center" }}
+                    >
                       Hora
                     </th>
                   </tr>
@@ -172,7 +203,12 @@ function VistaHistorialVentas() {
                         boxShadow: "0 2px 5px rgb(0 0 0 / 0.05)",
                       }}
                     >
-                      <td style={{ padding: "1rem", borderRadius: "10px 0 0 10px" }}>
+                      <td
+                        style={{
+                          padding: "1rem",
+                          borderRadius: "10px 0 0 10px",
+                        }}
+                      >
                         {venta.nombre}
                       </td>
                       <td style={{ padding: "1rem", textAlign: "center" }}>

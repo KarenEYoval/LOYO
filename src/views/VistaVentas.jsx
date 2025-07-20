@@ -48,7 +48,10 @@ function VistaVentas() {
     try {
       const ventasBatch = productosAVender.map(async (producto) => {
         const cantidad = parseInt(cantidades[producto.id], 10);
-        const precioUnitario = producto.precioOriginal || producto.precio || 0;
+       const precioUnitario =
+         producto.costoFinal || producto.precioOriginal || producto.precio || 0;
+
+
         const total = precioUnitario * cantidad;
 
         return addDoc(collection(db, "ventas"), {
@@ -72,21 +75,20 @@ function VistaVentas() {
     }
   };
 
-const limpiarCarrito = () => {
-  setCantidades({});
-};
+  const limpiarCarrito = () => {
+    setCantidades({});
+  };
 
   // Calcular total general en tiempo real
   const totalGeneral = productos.reduce((acc, producto) => {
     const cantidad = parseInt(cantidades[producto.id], 10);
     if (!cantidad || cantidad <= 0) return acc;
 
-    const precioUnitario = producto.precioOriginal || producto.precio || 0;
+    const precioUnitario =
+      producto.costoFinal || producto.precioOriginal || producto.precio || 0;
     return acc + cantidad * precioUnitario;
   }, 0);
 
-
-  
   const carrito = productos
     .filter((producto) => {
       const cantidad = parseInt(cantidades[producto.id], 10);
@@ -94,7 +96,10 @@ const limpiarCarrito = () => {
     })
     .map((producto) => {
       const cantidad = parseInt(cantidades[producto.id], 10);
-      const precioUnitario = producto.precioOriginal || producto.precio || 0;
+      const precioUnitario =
+        producto.costoFinal || producto.precioOriginal || producto.precio || 0;
+
+
       const total = cantidad * precioUnitario;
 
       return {
@@ -106,8 +111,6 @@ const limpiarCarrito = () => {
       };
     });
 
-    
-    
   return (
     <div
       style={{
@@ -173,7 +176,9 @@ const limpiarCarrito = () => {
             >
               <span>
                 {producto.nombre} - $
-                {producto.precioOriginal || producto.precio}
+                {producto.costoFinal ||
+                  producto.precioOriginal ||
+                  producto.precio}
               </span>
 
               <div
@@ -260,24 +265,22 @@ const limpiarCarrito = () => {
           </button>
         </div>
 
-<div style={{ textAlign: "center", marginTop: "0.5rem" }}>
-  <button
-    onClick={limpiarCarrito}
-    style={{
-      padding: "0.5rem 1rem",
-      backgroundColor: "#e74c3c",
-      color: "white",
-      border: "none",
-      borderRadius: "10px",
-      cursor: "pointer",
-      fontWeight: "bold",
-    }}
-  >
-    Limpiar Carrito
-  </button>
-</div>
-
-
+        <div style={{ textAlign: "center", marginTop: "0.5rem" }}>
+          <button
+            onClick={limpiarCarrito}
+            style={{
+              padding: "0.5rem 1rem",
+              backgroundColor: "#e74c3c",
+              color: "white",
+              border: "none",
+              borderRadius: "10px",
+              cursor: "pointer",
+              fontWeight: "bold",
+            }}
+          >
+            Limpiar Carrito
+          </button>
+        </div>
 
         {/* BOTÓN DE HISTORIAL DE VENTAS */}
         <div style={{ textAlign: "center", marginTop: "1rem" }}>

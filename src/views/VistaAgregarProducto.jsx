@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { collection, addDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { useNavigate } from "react-router-dom";
+import { collection, addDoc, getDocs } from "firebase/firestore";
+
 
 function VistaAgregarProducto() {
   const [form, setForm] = useState({
@@ -32,7 +33,20 @@ function VistaAgregarProducto() {
     setLoading(true);
 
     try {
+      // Consulta para verificar si ya existe el código
       const productosRef = collection(db, "productos");
+      const querySnapshot = await getDocs(productosRef);
+      const existeCodigo = querySnapshot.docs.some(
+        (doc) => doc.data().codigo === codigo
+      );
+
+      if (existeCodigo) {
+        alert("El código ya está registrado. Usa otro código diferente.");
+        setLoading(false);
+        return;
+      }
+
+      // Si no existe, agrega el producto
       await addDoc(productosRef, {
         codigo,
         nombre: nombre.trim(),
@@ -75,7 +89,10 @@ function VistaAgregarProducto() {
         }}
       >
         <h2 style={{ textAlign: "center" }}>Agregar Producto</h2>
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+        <form
+          onSubmit={handleSubmit}
+          style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+        >
           <input
             type="text"
             name="codigo"
@@ -107,7 +124,7 @@ function VistaAgregarProducto() {
           <input
             type="number"
             name="precioOriginal"
-            placeholder="Precio original"
+            placeholder="Costo"
             value={form.precioOriginal}
             onChange={handleChange}
             required
@@ -118,7 +135,7 @@ function VistaAgregarProducto() {
           <input
             type="number"
             name="costoFinal"
-            placeholder="Costo final"
+            placeholder="Precio Cliente"
             value={form.costoFinal}
             onChange={handleChange}
             required

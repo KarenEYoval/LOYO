@@ -20,7 +20,9 @@ function VistaInventario() {
   }, []);
 
   const handleEliminarProducto = async (id) => {
-    const confirmar = window.confirm("¿Seguro que quieres eliminar este producto?");
+    const confirmar = window.confirm(
+      "¿Seguro que quieres eliminar este producto?"
+    );
     if (!confirmar) return;
 
     try {
@@ -36,14 +38,21 @@ function VistaInventario() {
     navigate(`/editar-producto/${id}`);
   };
 
-  // Filtrar productos según búsqueda
-  const productosFiltrados = productos.filter((p) => {
-    const texto = busqueda.toLowerCase();
-    return (
-      p.nombre.toLowerCase().includes(texto) ||
-      (p.codigo && p.codigo.toLowerCase().includes(texto))
-    );
-  });
+  const productosFiltrados = productos
+    .filter((p) => {
+      const texto = busqueda.toLowerCase();
+      return (
+        p.nombre.toLowerCase().includes(texto) ||
+        (p.codigo && p.codigo.toLowerCase().includes(texto))
+      );
+    })
+    .sort((a, b) => {
+      const aNum = parseInt(a.codigo, 10);
+      const bNum = parseInt(b.codigo, 10);
+      if (isNaN(aNum)) return 1; // poner al final los sin código numérico
+      if (isNaN(bNum)) return -1;
+      return aNum - bNum;
+    });
 
   return (
     <div
@@ -140,8 +149,8 @@ function VistaInventario() {
                 <th>Código</th>
                 <th>Nombre</th>
                 <th>Cantidad</th>
-                <th>Precio original</th>
-                <th>Costo final</th>
+                <th>Costo</th>
+                <th>Precio cliente</th>
                 <th>Acción</th>
               </tr>
             </thead>
@@ -186,7 +195,10 @@ function VistaInventario() {
               ))}
               {productosFiltrados.length === 0 && (
                 <tr>
-                  <td colSpan="6" style={{ textAlign: "center", padding: "1rem" }}>
+                  <td
+                    colSpan="6"
+                    style={{ textAlign: "center", padding: "1rem" }}
+                  >
                     No se encontraron productos
                   </td>
                 </tr>
