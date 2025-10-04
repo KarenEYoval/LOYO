@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
-import { db } from "../firebase";
 import { useNavigate } from "react-router-dom";
 
 function VistaInventario() {
@@ -8,25 +6,28 @@ function VistaInventario() {
   const [busqueda, setBusqueda] = useState("");
   const navigate = useNavigate();
 
+  // Cargar productos desde backend MySQL
   useEffect(() => {
     const fetchProductos = async () => {
-      const productosRef = collection(db, "productos");
-      const snapshot = await getDocs(productosRef);
-      const docs = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setProductos(docs);
+      try {
+        const res = await fetch("http://localhost:5000/productos");
+        const data = await res.json();
+        setProductos(data);
+      } catch (error) {
+        console.error("Error al cargar productos:", error);
+      }
     };
 
     fetchProductos();
   }, []);
 
+  // Eliminar producto
   const handleEliminarProducto = async (id) => {
-    const confirmar = window.confirm(
-      "¿Seguro que quieres eliminar este producto?"
-    );
+    const confirmar = window.confirm("¿Seguro que quieres eliminar este producto?");
     if (!confirmar) return;
 
     try {
-      await deleteDoc(doc(db, "productos", id));
+      await fetch(`http://localhost:5000/productos/${id}`, { method: "DELETE" });
       setProductos(productos.filter((producto) => producto.id !== id));
     } catch (error) {
       console.error("Error al eliminar:", error);
@@ -34,10 +35,12 @@ function VistaInventario() {
     }
   };
 
+  // Editar producto
   const handleEditarProducto = (id) => {
     navigate(`/editar-producto/${id}`);
   };
 
+  // Filtrado y ordenamiento
   const productosFiltrados = productos
     .filter((p) => {
       const texto = busqueda.toLowerCase();
@@ -49,7 +52,7 @@ function VistaInventario() {
     .sort((a, b) => {
       const aNum = parseInt(a.codigo, 10);
       const bNum = parseInt(b.codigo, 10);
-      if (isNaN(aNum)) return 1; // poner al final los sin código numérico
+      if (isNaN(aNum)) return 1;
       if (isNaN(bNum)) return -1;
       return aNum - bNum;
     });
@@ -195,10 +198,7 @@ function VistaInventario() {
               ))}
               {productosFiltrados.length === 0 && (
                 <tr>
-                  <td
-                    colSpan="6"
-                    style={{ textAlign: "center", padding: "1rem" }}
-                  >
+                  <td colSpan="6" style={{ textAlign: "center", padding: "1rem" }}>
                     No se encontraron productos
                   </td>
                 </tr>

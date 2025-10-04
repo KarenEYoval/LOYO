@@ -1,8 +1,5 @@
 import { useState, useEffect } from "react";
 import { Routes, Route, Link, useLocation } from "react-router-dom";
-import { signOut } from "firebase/auth";
-import { auth } from "./firebase";
-
 import VistaLogin from "./views/VistaLogin";
 import VistaJefe from "./views/VistaJefe";
 import VistaInventario from "./views/VistaInventario";
@@ -28,30 +25,12 @@ function App() {
   }, []);
 
   const handleLogout = () => {
-    signOut(auth).then(() => {
-      setUsuario(null);
-      localStorage.removeItem("usuario");
-    });
+    setUsuario(null);
+    localStorage.removeItem("usuario");
   };
 
   return (
     <>
-      {/*}
-      {usuario && !estaEnLogin && !estaEnVentas && (
-        <nav
-          style={{
-            padding: "1rem",
-            background: "#eee",
-            display: "flex",
-            gap: "1rem",
-          }}
-        >
-          {usuario === "jefe" && <Link to="/jefe">Panel Jefe</Link>}
-          {usuario === "empleado" && <Link to="/empleado">Panel Empleado</Link>}
-          <button onClick={handleLogout}>Cerrar sesión</button>
-        </nav>
-      )}*/}
-
       <Routes>
         <Route path="/" element={<VistaLogin setUsuario={setUsuario} />} />
         <Route

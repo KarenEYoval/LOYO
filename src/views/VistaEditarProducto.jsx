@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { db } from "../firebase";
 
 function VistaEditarProducto() {
   const { id } = useParams();
@@ -14,29 +12,25 @@ function VistaEditarProducto() {
     costoFinal: "",
   });
 
-  // Cargar datos del producto
+  // Cargar datos del producto desde backend MySQL
   useEffect(() => {
     const cargarProducto = async () => {
       try {
-        const docRef = doc(db, "productos", id);
-        const docSnap = await getDoc(docRef);
+        const res = await fetch(`http://localhost:5000/productos/${id}`);
+        if (!res.ok) throw new Error("Producto no encontrado");
+        const data = await res.json();
 
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setForm({
-            codigo: data.codigo || "",
-            nombre: data.nombre || "",
-            cantidad: data.cantidad?.toString() || "",
-            precioOriginal: data.precioOriginal?.toString() || "",
-            costoFinal: data.costoFinal?.toString() || "",
-          });
-        } else {
-          alert("Producto no encontrado");
-          navigate("/inventario");
-        }
+        setForm({
+          codigo: data.codigo || "",
+          nombre: data.nombre || "",
+          cantidad: data.cantidad?.toString() || "",
+          precioOriginal: data.precioOriginal?.toString() || "",
+          costoFinal: data.costoFinal?.toString() || "",
+        });
       } catch (error) {
         console.error("Error al cargar producto:", error);
         alert("Error al cargar el producto");
+        navigate("/inventario");
       }
     };
 
@@ -57,14 +51,20 @@ function VistaEditarProducto() {
     }
 
     try {
-      const docRef = doc(db, "productos", id);
-      await updateDoc(docRef, {
-        codigo,
-        nombre,
-        cantidad: parseInt(cantidad, 10),
-        precioOriginal: parseFloat(precioOriginal),
-        costoFinal: parseFloat(costoFinal),
+      const res = await fetch(`http://localhost:5000/productos/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          codigo,
+          nombre,
+          cantidad: parseInt(cantidad, 10),
+          precioOriginal: parseFloat(precioOriginal),
+          costoFinal: parseFloat(costoFinal),
+        }),
       });
+
+      if (!res.ok) throw new Error("Error al actualizar");
+
       alert("Producto actualizado con éxito");
       navigate("/inventario");
     } catch (error) {

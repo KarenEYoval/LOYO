@@ -1,8 +1,5 @@
 import React, { useState } from "react";
-import { db } from "../firebase";
 import { useNavigate } from "react-router-dom";
-import { collection, addDoc, getDocs } from "firebase/firestore";
-
 
 function VistaAgregarProducto() {
   const [form, setForm] = useState({
@@ -33,12 +30,10 @@ function VistaAgregarProducto() {
     setLoading(true);
 
     try {
-      // Consulta para verificar si ya existe el código
-      const productosRef = collection(db, "productos");
-      const querySnapshot = await getDocs(productosRef);
-      const existeCodigo = querySnapshot.docs.some(
-        (doc) => doc.data().codigo === codigo
-      );
+      // Verificar si el código ya existe en MySQL
+      const resCheck = await fetch(`http://localhost:5000/productos`);
+      const data = await resCheck.json();
+      const existeCodigo = data.some((p) => p.codigo === codigo);
 
       if (existeCodigo) {
         alert("El código ya está registrado. Usa otro código diferente.");
@@ -46,20 +41,29 @@ function VistaAgregarProducto() {
         return;
       }
 
-      // Si no existe, agrega el producto
-      await addDoc(productosRef, {
-        codigo,
-        nombre: nombre.trim(),
-        cantidad: parseInt(cantidad, 10),
-        precioOriginal: parseFloat(precioOriginal),
-        costoFinal: parseFloat(costoFinal),
+      // Agregar producto en MySQL
+      const res = await fetch("http://localhost:5000/productos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          codigo,
+          nombre: nombre.trim(),
+          cantidad: parseInt(cantidad, 10),
+          precioOriginal: parseFloat(precioOriginal),
+          costoFinal: parseFloat(costoFinal),
+        }),
       });
+
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(errText);
+      }
 
       alert("Producto agregado con éxito");
       navigate("/inventario");
     } catch (error) {
       console.error("Error al agregar producto:", error);
-      alert("Error al agregar producto");
+      alert("Error al agregar producto: " + error.message);
     }
 
     setLoading(false);
@@ -93,83 +97,16 @@ function VistaAgregarProducto() {
           onSubmit={handleSubmit}
           style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
         >
-          <input
-            type="text"
-            name="codigo"
-            placeholder="Código"
-            value={form.codigo}
-            onChange={handleChange}
-            required
-            style={{ padding: "0.5rem" }}
-          />
-          <input
-            type="text"
-            name="nombre"
-            placeholder="Nombre"
-            value={form.nombre}
-            onChange={handleChange}
-            required
-            style={{ padding: "0.5rem" }}
-          />
-          <input
-            type="number"
-            name="cantidad"
-            placeholder="Cantidad"
-            value={form.cantidad}
-            onChange={handleChange}
-            required
-            min={1}
-            style={{ padding: "0.5rem" }}
-          />
-          <input
-            type="number"
-            name="precioOriginal"
-            placeholder="Costo"
-            value={form.precioOriginal}
-            onChange={handleChange}
-            required
-            min={0}
-            step="0.01"
-            style={{ padding: "0.5rem" }}
-          />
-          <input
-            type="number"
-            name="costoFinal"
-            placeholder="Precio Cliente"
-            value={form.costoFinal}
-            onChange={handleChange}
-            required
-            min={0}
-            step="0.01"
-            style={{ padding: "0.5rem" }}
-          />
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              backgroundColor: "#4a90e2",
-              color: "white",
-              padding: "0.75rem",
-              border: "none",
-              borderRadius: "8px",
-              cursor: loading ? "not-allowed" : "pointer",
-              fontWeight: "bold",
-            }}
-          >
+          <input type="text" name="codigo" placeholder="Código" value={form.codigo} onChange={handleChange} required />
+          <input type="text" name="nombre" placeholder="Nombre" value={form.nombre} onChange={handleChange} required />
+          <input type="number" name="cantidad" placeholder="Cantidad" value={form.cantidad} onChange={handleChange} required min={1} />
+          <input type="number" name="precioOriginal" placeholder="Costo" value={form.precioOriginal} onChange={handleChange} required min={0} step="0.01" />
+          <input type="number" name="costoFinal" placeholder="Precio Cliente" value={form.costoFinal} onChange={handleChange} required min={0} step="0.01" />
+
+          <button type="submit" disabled={loading} style={{ backgroundColor: "#4a90e2", color: "white", padding: "0.75rem", border: "none", borderRadius: "8px", cursor: loading ? "not-allowed" : "pointer", fontWeight: "bold" }}>
             {loading ? "Guardando..." : "Guardar Producto"}
           </button>
-          <button
-            type="button"
-            onClick={() => navigate("/inventario")}
-            style={{
-              backgroundColor: "#ccc",
-              color: "black",
-              padding: "0.75rem",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-            }}
-          >
+          <button type="button" onClick={() => navigate("/inventario")} style={{ backgroundColor: "#ccc", color: "black", padding: "0.75rem", border: "none", borderRadius: "8px", cursor: "pointer" }}>
             Cancelar
           </button>
         </form>

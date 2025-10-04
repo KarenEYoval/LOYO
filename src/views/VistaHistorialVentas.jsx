@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
-import { db } from "../firebase";
 import { useNavigate } from "react-router-dom";
 
-// Función para formatear la fecha a "dd/mm/yyyy"
-function formatDateLabel(date) {
-  return date.toLocaleDateString(); // Formato: día/mes/año
+// Formatear fecha a "dd/mm/yyyy"
+function formatDateLabel(dateStr) {
+  const date = new Date(dateStr);
+  return `${date.getDate().toString().padStart(2,"0")}/${
+    (date.getMonth()+1).toString().padStart(2,"0")
+  }/${date.getFullYear()}`;
 }
 
 function VistaHistorialVentas() {
@@ -14,14 +15,13 @@ function VistaHistorialVentas() {
 
   useEffect(() => {
     const fetchVentas = async () => {
-      const ventasRef = collection(db, "ventas");
-      const q = query(ventasRef, orderBy("fecha", "desc"));
-      const snapshot = await getDocs(q);
-      const docs = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setVentas(docs);
+      try {
+        const res = await fetch("http://localhost:5000/ventas");
+        const data = await res.json();
+        setVentas(data);
+      } catch (error) {
+        console.error("Error al cargar ventas:", error);
+      }
     };
 
     fetchVentas();
@@ -29,7 +29,7 @@ function VistaHistorialVentas() {
 
   // Agrupa ventas por día
   const ventasPorDia = ventas.reduce((acc, venta) => {
-    const fechaVenta = venta.fecha ? venta.fecha.toDate() : null;
+    const fechaVenta = venta.fecha; // Fecha como string de MySQL
     if (!fechaVenta) return acc;
 
     const dia = formatDateLabel(fechaVenta);
@@ -40,7 +40,6 @@ function VistaHistorialVentas() {
     return acc;
   }, {});
 
-  // Ordenar días descendentemente
   const diasOrdenados = Object.keys(ventasPorDia).sort(
     (a, b) =>
       new Date(b.split("/").reverse()) - new Date(a.split("/").reverse())
@@ -128,10 +127,7 @@ function VistaHistorialVentas() {
             >
               {`Ventas del ${dia}`}
             </h2>
-            {/* Resumen por día */}
-            <p
-              style={{ fontSize: "1rem", color: "#444", marginBottom: "1rem" }}
-            >
+            <p style={{ fontSize: "1rem", color: "#444", marginBottom: "1rem" }}>
               Total productos vendidos:{" "}
               <strong>
                 {ventasPorDia[dia].reduce(
@@ -171,69 +167,60 @@ function VistaHistorialVentas() {
                     <th style={{ padding: "0.75rem 1rem", textAlign: "left" }}>
                       Producto
                     </th>
-                    <th
-                      style={{ padding: "0.75rem 1rem", textAlign: "center" }}
-                    >
+                    <th style={{ padding: "0.75rem 1rem", textAlign: "center" }}>
                       Cantidad
                     </th>
-                    <th
-                      style={{ padding: "0.75rem 1rem", textAlign: "center" }}
-                    >
+                    <th style={{ padding: "0.75rem 1rem", textAlign: "center" }}>
                       Precio Unitario
                     </th>
-                    <th
-                      style={{ padding: "0.75rem 1rem", textAlign: "center" }}
-                    >
+                    <th style={{ padding: "0.75rem 1rem", textAlign: "center" }}>
                       Total
                     </th>
-                    <th
-                      style={{ padding: "0.75rem 1rem", textAlign: "center" }}
-                    >
+                    <th style={{ padding: "0.75rem 1rem", textAlign: "center" }}>
                       Hora
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {ventasPorDia[dia].map((venta) => (
-                    <tr
-                      key={venta.id}
-                      style={{
-                        backgroundColor: "#f9f9f9",
-                        borderRadius: "10px",
-                        boxShadow: "0 2px 5px rgb(0 0 0 / 0.05)",
-                      }}
-                    >
-                      <td
+                  {ventasPorDia[dia].map((venta) => {
+                    const fecha = new Date(venta.fecha);
+                    const hora = fecha.toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    });
+                    return (
+                      <tr
+                        key={venta.id}
                         style={{
-                          padding: "1rem",
-                          borderRadius: "10px 0 0 10px",
+                          backgroundColor: "#f9f9f9",
+                          borderRadius: "10px",
+                          boxShadow: "0 2px 5px rgb(0 0 0 / 0.05)",
                         }}
                       >
-                        {venta.nombre}
-                      </td>
-                      <td style={{ padding: "1rem", textAlign: "center" }}>
-                        {venta.cantidadVendida}
-                      </td>
-                      <td style={{ padding: "1rem", textAlign: "center" }}>
-                        ${Number(venta.precioUnitario || 0).toFixed(2)}
-                      </td>
-                      <td style={{ padding: "1rem", textAlign: "center" }}>
-                        ${Number(venta.totalVenta || 0).toFixed(2)}
-                      </td>
-                      <td
-                        style={{
-                          padding: "1rem",
-                          textAlign: "center",
-                          borderRadius: "0 10px 10px 0",
-                        }}
-                      >
-                        {venta.fecha?.toDate().toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        }) || "—"}
-                      </td>
-                    </tr>
-                  ))}
+                        <td style={{ padding: "1rem", borderRadius: "10px 0 0 10px" }}>
+                          {venta.nombre}
+                        </td>
+                        <td style={{ padding: "1rem", textAlign: "center" }}>
+                          {venta.cantidadVendida}
+                        </td>
+                        <td style={{ padding: "1rem", textAlign: "center" }}>
+                          ${Number(venta.precioUnitario || 0).toFixed(2)}
+                        </td>
+                        <td style={{ padding: "1rem", textAlign: "center" }}>
+                          ${Number(venta.totalVenta || 0).toFixed(2)}
+                        </td>
+                        <td
+                          style={{
+                            padding: "1rem",
+                            textAlign: "center",
+                            borderRadius: "0 10px 10px 0",
+                          }}
+                        >
+                          {hora || "—"}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
