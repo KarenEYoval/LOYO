@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function VistaInventario() {
   const [productos, setProductos] = useState([]);
   const [busqueda, setBusqueda] = useState("");
@@ -10,7 +12,7 @@ function VistaInventario() {
   useEffect(() => {
     const fetchProductos = async () => {
       try {
-        const res = await fetch("http://localhost:5000/productos");
+        const res = await fetch(`${API_URL}/productos`);
         const data = await res.json();
         setProductos(data);
       } catch (error) {
@@ -23,11 +25,16 @@ function VistaInventario() {
 
   // Eliminar producto
   const handleEliminarProducto = async (id) => {
-    const confirmar = window.confirm("¿Seguro que quieres eliminar este producto?");
+    const confirmar = window.confirm(
+      "¿Seguro que quieres eliminar este producto?"
+    );
     if (!confirmar) return;
 
     try {
-      await fetch(`http://localhost:5000/productos/${id}`, { method: "DELETE" });
+      await fetch(`${import.meta.env.VITE_API_URL}/productos/${id}`, {
+        method: "DELETE",
+      });
+
       setProductos(productos.filter((producto) => producto.id !== id));
     } catch (error) {
       console.error("Error al eliminar:", error);
@@ -198,7 +205,10 @@ function VistaInventario() {
               ))}
               {productosFiltrados.length === 0 && (
                 <tr>
-                  <td colSpan="6" style={{ textAlign: "center", padding: "1rem" }}>
+                  <td
+                    colSpan="6"
+                    style={{ textAlign: "center", padding: "1rem" }}
+                  >
                     No se encontraron productos
                   </td>
                 </tr>

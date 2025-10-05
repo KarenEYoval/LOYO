@@ -22,16 +22,42 @@ function VistaAgregarProducto() {
 
     const { codigo, nombre, cantidad, precioOriginal, costoFinal } = form;
 
+    // Validaciones básicas
     if (!codigo || !nombre || !cantidad || !precioOriginal || !costoFinal) {
       alert("Completa todos los campos");
+      return;
+    }
+
+    if (codigo.length < 3 || codigo.length > 50) {
+      alert("El código debe tener entre 3 y 50 caracteres");
+      return;
+    }
+
+    if (nombre.length < 3) {
+      alert("El nombre debe tener al menos 3 caracteres");
+      return;
+    }
+
+    if (cantidad <= 0) {
+      alert("La cantidad debe ser mayor que 0");
+      return;
+    }
+
+    if (precioOriginal < 0 || costoFinal < 0) {
+      alert("Los precios no pueden ser negativos");
+      return;
+    }
+
+    if (costoFinal < precioOriginal) {
+      alert("El precio al cliente no puede ser menor que el costo");
       return;
     }
 
     setLoading(true);
 
     try {
-      // Verificar si el código ya existe en MySQL
-      const resCheck = await fetch(`http://localhost:5000/productos`);
+      // ✅ Verificar si el código ya existe
+      const resCheck = await fetch(`${import.meta.env.VITE_API_URL}/productos`);
       const data = await resCheck.json();
       const existeCodigo = data.some((p) => p.codigo === codigo);
 
@@ -41,8 +67,8 @@ function VistaAgregarProducto() {
         return;
       }
 
-      // Agregar producto en MySQL
-      const res = await fetch("http://localhost:5000/productos", {
+      // ✅ Agregar producto
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/productos`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -97,16 +123,80 @@ function VistaAgregarProducto() {
           onSubmit={handleSubmit}
           style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
         >
-          <input type="text" name="codigo" placeholder="Código" value={form.codigo} onChange={handleChange} required />
-          <input type="text" name="nombre" placeholder="Nombre" value={form.nombre} onChange={handleChange} required />
-          <input type="number" name="cantidad" placeholder="Cantidad" value={form.cantidad} onChange={handleChange} required min={1} />
-          <input type="number" name="precioOriginal" placeholder="Costo" value={form.precioOriginal} onChange={handleChange} required min={0} step="0.01" />
-          <input type="number" name="costoFinal" placeholder="Precio Cliente" value={form.costoFinal} onChange={handleChange} required min={0} step="0.01" />
+          <input
+            type="text"
+            name="codigo"
+            placeholder="Código"
+            value={form.codigo}
+            onChange={handleChange}
+            required
+          />
+          <input
+            type="text"
+            name="nombre"
+            placeholder="Nombre"
+            value={form.nombre}
+            onChange={handleChange}
+            required
+          />
+          <input
+            type="number"
+            name="cantidad"
+            placeholder="Cantidad"
+            value={form.cantidad}
+            onChange={handleChange}
+            required
+            min={1}
+          />
+          <input
+            type="number"
+            name="precioOriginal"
+            placeholder="Costo"
+            value={form.precioOriginal}
+            onChange={handleChange}
+            required
+            min={0}
+            step="0.01"
+          />
+          <input
+            type="number"
+            name="costoFinal"
+            placeholder="Precio Cliente"
+            value={form.costoFinal}
+            onChange={handleChange}
+            required
+            min={0}
+            step="0.01"
+          />
 
-          <button type="submit" disabled={loading} style={{ backgroundColor: "#4a90e2", color: "white", padding: "0.75rem", border: "none", borderRadius: "8px", cursor: loading ? "not-allowed" : "pointer", fontWeight: "bold" }}>
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              backgroundColor: "#4a90e2",
+              color: "white",
+              padding: "0.75rem",
+              border: "none",
+              borderRadius: "8px",
+              cursor: loading ? "not-allowed" : "pointer",
+              fontWeight: "bold",
+            }}
+          >
             {loading ? "Guardando..." : "Guardar Producto"}
           </button>
-          <button type="button" onClick={() => navigate("/inventario")} style={{ backgroundColor: "#ccc", color: "black", padding: "0.75rem", border: "none", borderRadius: "8px", cursor: "pointer" }}>
+
+          <button
+            type="button"
+            onClick={() => navigate("/inventario")}
+            style={{
+              backgroundColor: "#ccc",
+              color: "black",
+              padding: "0.75rem",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+            }}
+          >
             Cancelar
           </button>
         </form>

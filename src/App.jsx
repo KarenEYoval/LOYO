@@ -1,5 +1,6 @@
+// App.jsx
 import { useState, useEffect } from "react";
-import { Routes, Route, Link, useLocation } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import VistaLogin from "./views/VistaLogin";
 import VistaJefe from "./views/VistaJefe";
 import VistaInventario from "./views/VistaInventario";
@@ -9,95 +10,52 @@ import VistaRegistro from "./views/VistaRegistro.jsx";
 import VistaEditarProducto from "./views/VistaEditarProducto.jsx";
 import VistaHistorialVentas from "./views/VistaHistorialVentas";
 
-import "./styles.css";
-
 function App() {
-  const location = useLocation();
-  const estaEnLogin = location.pathname === "/";
-  const estaEnVentas = location.pathname === "/ventas";
   const [usuario, setUsuario] = useState(null);
 
   useEffect(() => {
     const usuarioGuardado = localStorage.getItem("usuario");
-    if (usuarioGuardado) {
-      setUsuario(usuarioGuardado);
-    }
+    if (usuarioGuardado) setUsuario(usuarioGuardado);
   }, []);
 
-  const handleLogout = () => {
-    setUsuario(null);
-    localStorage.removeItem("usuario");
-  };
-
   return (
-    <>
-      <Routes>
-        <Route path="/" element={<VistaLogin setUsuario={setUsuario} />} />
-        <Route
-          path="/jefe"
-          element={
-            usuario === "jefe" ? (
-              <VistaJefe />
-            ) : (
-              <VistaLogin setUsuario={setUsuario} />
-            )
-          }
-        />
-        /*
-        <Route
-          path="/inventario"
-          element={
-            usuario === "jefe" ? (
-              <VistaInventario />
-            ) : (
-              <VistaLogin setUsuario={setUsuario} />
-            )
-          }
-        />
-        <Route
-          path="/ventas"
-          element={
-            usuario === "jefe" || usuario === "empleado" ? (
-              <VistaVentas />
-            ) : (
-              <VistaLogin setUsuario={setUsuario} />
-            )
-          }
-        />
-        <Route
-          path="/empleado"
-          element={
-            usuario === "jefe" || usuario === "empleado" ? (
-              <VistaVentas />
-            ) : (
-              <VistaLogin setUsuario={setUsuario} />
-            )
-          }
-        />
-        <Route
-          path="/agregar-producto"
-          element={
-            usuario === "jefe" ? (
-              <VistaAgregarProducto />
-            ) : (
-              <VistaLogin setUsuario={setUsuario} />
-            )
-          }
-        />
-        <Route path="/registro" element={<VistaRegistro />} />
-        <Route
-          path="/editar-producto/:id"
-          element={
-            usuario === "jefe" ? (
-              <VistaEditarProducto />
-            ) : (
-              <VistaLogin setUsuario={setUsuario} />
-            )
-          }
-        />
-        <Route path="/historial-ventas" element={<VistaHistorialVentas />} />
-      </Routes>
-    </>
+    <Routes>
+      <Route path="/" element={<VistaLogin setUsuario={setUsuario} />} />
+
+      <Route
+        path="/jefe"
+        element={usuario === "jefe" ? <VistaJefe /> : <VistaLogin setUsuario={setUsuario} />}
+      />
+
+      <Route
+        path="/inventario"
+        element={usuario === "jefe" ? <VistaInventario /> : <VistaLogin setUsuario={setUsuario} />}
+      />
+
+      <Route
+        path="/ventas"
+        element={usuario === "jefe" || usuario === "empleado" ? <VistaVentas /> : <VistaLogin setUsuario={setUsuario} />}
+      />
+
+      <Route
+        path="/empleado"
+        element={usuario === "jefe" || usuario === "empleado" ? <VistaVentas /> : <VistaLogin setUsuario={setUsuario} />}
+      />
+
+      <Route
+        path="/agregar-producto"
+        element={usuario === "jefe" ? <VistaAgregarProducto /> : <VistaLogin setUsuario={setUsuario} />}
+      />
+
+      <Route path="/registro" element={<VistaRegistro />} />
+
+      <Route
+        path="/editar-producto/:id"
+        element={usuario === "jefe" ? <VistaEditarProducto /> : <VistaLogin setUsuario={setUsuario} />}
+      />
+
+      <Route path="/historial-ventas" element={<VistaHistorialVentas />} />
+    </Routes>
   );
 }
 
