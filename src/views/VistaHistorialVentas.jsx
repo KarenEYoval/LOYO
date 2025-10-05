@@ -16,27 +16,28 @@ function VistaHistorialVentas() {
   useEffect(() => {
     const fetchVentas = async () => {
       try {
-        const res = await fetch("http://localhost:5000/ventas");
+        const res = await fetch("http://localhost:3001/historial-ventas");
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const data = await res.json();
-        setVentas(data);
+        // Aseguramos que siempre sea un arreglo
+        setVentas(Array.isArray(data) ? data : []);
       } catch (error) {
-        console.error("Error al cargar ventas:", error);
+        console.error("Error al cargar historial de ventas:", error);
+        setVentas([]);
       }
     };
 
     fetchVentas();
   }, []);
 
-  // Agrupa ventas por día
+  // Agrupar ventas por día
   const ventasPorDia = ventas.reduce((acc, venta) => {
-    const fechaVenta = venta.fecha; // Fecha como string de MySQL
+    const fechaVenta = venta.fecha;
     if (!fechaVenta) return acc;
 
     const dia = formatDateLabel(fechaVenta);
-
     if (!acc[dia]) acc[dia] = [];
     acc[dia].push(venta);
-
     return acc;
   }, {});
 
@@ -46,178 +47,63 @@ function VistaHistorialVentas() {
   );
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "#f0f2f5",
-        padding: "2rem",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "flex-start",
-      }}
-    >
-      <div
-        style={{
-          backgroundColor: "white",
-          borderRadius: "20px",
-          padding: "2rem 3rem",
-          boxShadow: "0 12px 30px rgba(0,0,0,0.12)",
-          width: "100%",
-          maxWidth: "900px",
-          marginTop: "2rem",
-          marginBottom: "2rem",
-          fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-        }}
-      >
-        <h1
-          style={{
-            marginBottom: "2rem",
-            fontSize: "2.5rem",
-            fontWeight: "bold",
-            textAlign: "center",
-            color: "#333",
-          }}
-        >
+    <div style={{ minHeight: "100vh", backgroundColor: "#f0f2f5", padding: "2rem", display: "flex", justifyContent: "center", alignItems: "flex-start" }}>
+      <div style={{ backgroundColor: "white", borderRadius: "20px", padding: "2rem 3rem", boxShadow: "0 12px 30px rgba(0,0,0,0.12)", width: "100%", maxWidth: "900px", marginTop: "2rem", marginBottom: "2rem", fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" }}>
+        <h1 style={{ marginBottom: "2rem", fontSize: "2.5rem", fontWeight: "bold", textAlign: "center", color: "#333" }}>
           Historial de Ventas
         </h1>
 
         <button
           onClick={() => navigate("/ventas")}
-          style={{
-            padding: "0.6rem 1.2rem",
-            backgroundColor: "#68b684",
-            border: "none",
-            borderRadius: "8px",
-            color: "white",
-            cursor: "pointer",
-            fontWeight: "bold",
-            marginBottom: "2rem",
-            display: "block",
-            marginLeft: "auto",
-            marginRight: "auto",
-            transition: "background-color 0.3s",
-          }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.backgroundColor = "#52915c")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.backgroundColor = "#68b684")
-          }
+          style={{ padding: "0.6rem 1.2rem", backgroundColor: "#68b684", border: "none", borderRadius: "8px", color: "white", cursor: "pointer", fontWeight: "bold", marginBottom: "2rem", display: "block", marginLeft: "auto", marginRight: "auto", transition: "background-color 0.3s" }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#52915c")}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#68b684")}
         >
           Regresar
         </button>
 
         {diasOrdenados.length === 0 && (
-          <p style={{ textAlign: "center", color: "#777", fontSize: "1.1rem" }}>
-            No hay ventas registradas.
-          </p>
+          <p style={{ textAlign: "center", color: "#777", fontSize: "1.1rem" }}>No hay ventas registradas.</p>
         )}
 
         {diasOrdenados.map((dia) => (
           <section key={dia} style={{ marginBottom: "3rem" }}>
-            <h2
-              style={{
-                borderBottom: "2px solid #68b684",
-                paddingBottom: "0.3rem",
-                marginBottom: "1rem",
-                color: "#68b684",
-                fontWeight: "600",
-                fontSize: "1.4rem",
-              }}
-            >
+            <h2 style={{ borderBottom: "2px solid #68b684", paddingBottom: "0.3rem", marginBottom: "1rem", color: "#68b684", fontWeight: "600", fontSize: "1.4rem" }}>
               {`Ventas del ${dia}`}
             </h2>
             <p style={{ fontSize: "1rem", color: "#444", marginBottom: "1rem" }}>
               Total productos vendidos:{" "}
               <strong>
-                {ventasPorDia[dia].reduce(
-                  (acc, v) => acc + Number(v.cantidadVendida || 0),
-                  0
-                )}
-              </strong>
-              {" | "}
-              Transacciones: <strong>{ventasPorDia[dia].length}</strong>
-              {" | "}
-              Monto total:{" "}
+                {ventasPorDia[dia].reduce((acc, v) => acc + Number(v.cantidad || 0), 0)}
+              </strong>{" "}
+              | Transacciones: <strong>{ventasPorDia[dia].length}</strong> | Monto total:{" "}
               <strong>
-                $
-                {ventasPorDia[dia]
-                  .reduce((acc, v) => acc + Number(v.totalVenta || 0), 0)
-                  .toFixed(2)}
+                ${ventasPorDia[dia].reduce((acc, v) => acc + Number(v.total || 0), 0).toFixed(2)}
               </strong>
             </p>
 
             <div style={{ overflowX: "auto" }}>
-              <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "separate",
-                  borderSpacing: "0 0.75rem",
-                  minWidth: "700px",
-                }}
-              >
+              <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: "0 0.75rem", minWidth: "700px" }}>
                 <thead>
-                  <tr
-                    style={{
-                      color: "#555",
-                      fontWeight: "600",
-                      fontSize: "1rem",
-                    }}
-                  >
-                    <th style={{ padding: "0.75rem 1rem", textAlign: "left" }}>
-                      Producto
-                    </th>
-                    <th style={{ padding: "0.75rem 1rem", textAlign: "center" }}>
-                      Cantidad
-                    </th>
-                    <th style={{ padding: "0.75rem 1rem", textAlign: "center" }}>
-                      Precio Unitario
-                    </th>
-                    <th style={{ padding: "0.75rem 1rem", textAlign: "center" }}>
-                      Total
-                    </th>
-                    <th style={{ padding: "0.75rem 1rem", textAlign: "center" }}>
-                      Hora
-                    </th>
+                  <tr style={{ color: "#555", fontWeight: "600", fontSize: "1rem" }}>
+                    <th style={{ padding: "0.75rem 1rem", textAlign: "left" }}>Producto</th>
+                    <th style={{ padding: "0.75rem 1rem", textAlign: "center" }}>Cantidad</th>
+                    <th style={{ padding: "0.75rem 1rem", textAlign: "center" }}>Precio Unitario</th>
+                    <th style={{ padding: "0.75rem 1rem", textAlign: "center" }}>Total</th>
+                    <th style={{ padding: "0.75rem 1rem", textAlign: "center" }}>Hora</th>
                   </tr>
                 </thead>
                 <tbody>
                   {ventasPorDia[dia].map((venta) => {
                     const fecha = new Date(venta.fecha);
-                    const hora = fecha.toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    });
+                    const hora = fecha.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
                     return (
-                      <tr
-                        key={venta.id}
-                        style={{
-                          backgroundColor: "#f9f9f9",
-                          borderRadius: "10px",
-                          boxShadow: "0 2px 5px rgb(0 0 0 / 0.05)",
-                        }}
-                      >
-                        <td style={{ padding: "1rem", borderRadius: "10px 0 0 10px" }}>
-                          {venta.nombre}
-                        </td>
-                        <td style={{ padding: "1rem", textAlign: "center" }}>
-                          {venta.cantidadVendida}
-                        </td>
-                        <td style={{ padding: "1rem", textAlign: "center" }}>
-                          ${Number(venta.precioUnitario || 0).toFixed(2)}
-                        </td>
-                        <td style={{ padding: "1rem", textAlign: "center" }}>
-                          ${Number(venta.totalVenta || 0).toFixed(2)}
-                        </td>
-                        <td
-                          style={{
-                            padding: "1rem",
-                            textAlign: "center",
-                            borderRadius: "0 10px 10px 0",
-                          }}
-                        >
-                          {hora || "—"}
-                        </td>
+                      <tr key={venta.id} style={{ backgroundColor: "#f9f9f9", borderRadius: "10px", boxShadow: "0 2px 5px rgb(0 0 0 / 0.05)" }}>
+                        <td style={{ padding: "1rem", borderRadius: "10px 0 0 10px" }}>{venta.nombre}</td>
+                        <td style={{ padding: "1rem", textAlign: "center" }}>{venta.cantidad}</td>
+                        <td style={{ padding: "1rem", textAlign: "center" }}>${Number(venta.precioUnitario || 0).toFixed(2)}</td>
+                        <td style={{ padding: "1rem", textAlign: "center" }}>${Number(venta.total || 0).toFixed(2)}</td>
+                        <td style={{ padding: "1rem", textAlign: "center", borderRadius: "0 10px 10px 0" }}>{hora}</td>
                       </tr>
                     );
                   })}
